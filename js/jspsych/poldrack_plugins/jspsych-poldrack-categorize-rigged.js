@@ -5,8 +5,7 @@
  * documentation: docs.jspsych.org
  * 
  * Modified by Ian Eisenberg to record more trial parameters
- **/
-
+ */
 
 jsPsych.plugins["poldrack-categorize-rigged"] = (function() {
 
@@ -71,6 +70,10 @@ jsPsych.plugins["poldrack-categorize-rigged"] = (function() {
       display_element.append(trial.prompt);
     }
 
+    // add buttons for responses
+    display_element.append('<button id="button-1" class="jspsych-btn">Orange</button>');
+    display_element.append('<button id="button-2" class="jspsych-btn">Blue</button>');
+
     var trial_data = {};
 
     // create response function
@@ -85,8 +88,10 @@ jsPsych.plugins["poldrack-categorize-rigged"] = (function() {
         clearTimeout(setTimeoutHandlers[i]);
       }
 
-      // clear keyboard listener
-      jsPsych.pluginAPI.cancelAllKeyboardResponses();
+      // clear button listeners
+      $('#button-1').off('click');
+      $('#button-2').off('click');
+
       var correct = false;
       if (trial.key_answer == info.key) {
         correct = true;
@@ -96,10 +101,10 @@ jsPsych.plugins["poldrack-categorize-rigged"] = (function() {
       var stim_duration = trial.timing_stim
       var block_duration = trial.timing_response
       if (trial.response_ends_trial & info.rt != -1) {
-          block_duration = info.rt
+        block_duration = info.rt
       }
       if (stim_duration != -1) {
-        stim_duration = Math.min(block_duration,trial.timing_stim)
+        stim_duration = Math.min(block_duration, trial.timing_stim)
       } else {
         stim_duration = block_duration
       }
@@ -118,24 +123,24 @@ jsPsych.plugins["poldrack-categorize-rigged"] = (function() {
         "timing_post_trial": trial.timing_post_trial
       };
 
-
       var timeout = info.rt == -1;
 
       // if response ends trial display feedback immediately
       if (trial.response_ends_trial || info.rt == -1) {
-        
         display_element.html('');
         doFeedback(correct, timeout);
       // otherwise wait until timing_response is reached
       } else {
-
         if (info.key === trial.data.correct_response) {
-          correct = true
+          if (Math.random() < 0.6) {
+            correct = true
+          } else {
+            correct = false
+            console.log("Correct randomly flagged as incorrect!")
+          }
         } else {
           correct = false
-        } 
-
-        console.log("IN HERE" + correct  + "\ninfo.key" + info.key + "\ntrial.key_answer " + trial.data.correct_response)
+        }
 
         if (trial.timing_stim > -1) {
           setTimeout(function() {
@@ -154,14 +159,24 @@ jsPsych.plugins["poldrack-categorize-rigged"] = (function() {
       }
     }
 
-    jsPsych.pluginAPI.getKeyboardResponse({
-      callback_function: after_response,
-      valid_responses: trial.choices,
-      rt_method: 'date',
-      persist: false,
-      allow_held_key: false
+    // start button listeners
+    $('#button-1').on('click', function() {
+      after_response({
+        key: trial.choices[0],
+        rt: (new Date()).getTime() - start_time
+      });
     });
 
+    $('#button-2').on('click', function() {
+      after_response({
+        key: trial.choices[1],
+        rt: (new Date()).getTime() - start_time
+      });
+    });
+
+    var start_time = (new Date()).getTime();
+
+    // end trial if timing_response is set
     if (trial.timing_response > 0) {
       setTimeoutHandlers.push(setTimeout(function() {
         after_response({
@@ -212,13 +227,8 @@ jsPsych.plugins["poldrack-categorize-rigged"] = (function() {
           endTrial();
         }
 
-        jsPsych.pluginAPI.getKeyboardResponse({
-          callback_function: after_forced_response,
-          valid_responses: [trial.key_answer],
-          rt_method: 'date',
-          persist: false,
-          allow_held_key: false
-        });
+        $('#button-1').on('click', after_forced_response);
+        $('#button-2').on('click', after_forced_response);
 
       } else {
         setTimeout(function() {
