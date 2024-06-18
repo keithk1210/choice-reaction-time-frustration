@@ -95,14 +95,16 @@ var credit_var = true
 // task specific variables
 var num_blocks = 3
 var block_len = 50
-var practice_len = 20
+var practice_len = 2
 var gap = 0
 var current_trial = 0
   //set stim/response mapping
-var correct_responses = jsPsych.randomization.shuffle([
+var correct_responses = //jsPsych.randomization.shuffle(
+  [
     ['"M"', 77],
     ['"Z"', 90]
-  ])
+  ]
+//)
 
 var choices = [correct_responses[0][1], correct_responses[1][1]]
 
@@ -317,22 +319,29 @@ var practice_block = {
 var test_blocks = []
 for (var b = 0; b < num_blocks; b++) {
 	var test_block = {
-	  type: 'poldrack-single-stim',
-	  timeline: test_trials[b],
-	  is_html: true,
-	  data: {
-	    trial_id: 'stim',
-	    exp_stage: 'test'
-	  },
-	  choices: choices,
-	  timing_response: 2000,
-	  timing_post_trial: post_trial_gap,
+	  type: 'poldrack-categorize-rigged',
+    timeline: test_trials[b],
+    is_html: true,
+    data: {
+      trial_id: 'stim',
+      exp_stage: 'test'
+    },
+    correct_text: '<div class = centerbox><div style="color:green"; class = center-text>Correct! :D</div></div>',
+    incorrect_text: '<div class = centerbox><div style="color:red"; class = center-text>Incorrect! >:(</div></div>',
+    timeout_message: '<div class = centerbox><div class = center-text>Respond Faster!</div></div>',
+    choices: choices,
+    timing_response: 2000,
+    timing_stim: 2000,
+    timing_feedback_duration: 1000,
+    show_stim_with_feedback: false,
+    timing_post_trial: post_trial_gap,
 	  on_finish: function(data) {
 	    appendData()
 	    correct = false
 	    if (data.key_press === data.correct_response) {
 	      correct = true
 	    }
+      //console.log("In here! key press" + data.key_press + ", correct response " + data.correct_response + " correct: " + correct)
 	    jsPsych.data.addDataToLastTrial({correct: correct})
 	  }
 	};

@@ -8,7 +8,7 @@
  **/
 
 
-jsPsych.plugins["poldrack-categorize"] = (function() {
+jsPsych.plugins["poldrack-categorize-rigged"] = (function() {
 
   var plugin = {};
 
@@ -16,7 +16,7 @@ jsPsych.plugins["poldrack-categorize"] = (function() {
 
   plugin.trial = function(display_element, trial) {
 
-    console.log("poldrack-categorize")
+    console.log("poldrack-categorize-rigged")
 
     // default parameters
     trial.text_answer = (typeof trial.text_answer === 'undefined') ? "" : trial.text_answer;
@@ -123,10 +123,20 @@ jsPsych.plugins["poldrack-categorize"] = (function() {
 
       // if response ends trial display feedback immediately
       if (trial.response_ends_trial || info.rt == -1) {
+        
         display_element.html('');
         doFeedback(correct, timeout);
       // otherwise wait until timing_response is reached
       } else {
+
+        if (info.key === trial.data.correct_response) {
+          correct = true
+        } else {
+          correct = false
+        } 
+
+        console.log("IN HERE" + correct  + "\ninfo.key" + info.key + "\ntrial.key_answer " + trial.data.correct_response)
+
         if (trial.timing_stim > -1) {
           setTimeout(function() {
             $('#jspsych-poldrack-categorize-stimulus').css('visibility', 'hidden');
