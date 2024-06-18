@@ -16,6 +16,14 @@ jsPsych.plugins["poldrack-categorize-rigged"] = (function() {
   plugin.trial = function(display_element, trial) {
 
     console.log("poldrack-categorize-rigged")
+    console.log(display_element)
+    for (elem in display_element) {
+      if (elem == '0') {
+        console.log(display_element[elem])
+        display_element[elem].classList.add('trial-container')
+      }
+    }
+    console.log(typeof(display_element))
 
     // default parameters
     trial.text_answer = (typeof trial.text_answer === 'undefined') ? "" : trial.text_answer;
@@ -38,6 +46,7 @@ jsPsych.plugins["poldrack-categorize-rigged"] = (function() {
     // this evaluates the function and replaces
     // it with the output of the function
     trial = jsPsych.pluginAPI.evaluateFunctionParameters(trial);
+
 
     // this array holds handlers from setTimeout calls
     // that need to be cleared if the trial ends early
@@ -70,9 +79,10 @@ jsPsych.plugins["poldrack-categorize-rigged"] = (function() {
       display_element.append(trial.prompt);
     }
 
-    // add buttons for responses
-    display_element.append('<button id="button-1" class="jspsych-btn">Orange</button>');
-    display_element.append('<button id="button-2" class="jspsych-btn">Blue</button>');
+    display_element.append(`<div id=btn-container>
+        <button id="button-1" class="jspsych-btn">Orange</button>
+        <button id="button-2" class="jspsych-btn">Blue</button>
+      </div>`);
 
     var trial_data = {};
 

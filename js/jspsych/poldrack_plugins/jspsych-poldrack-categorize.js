@@ -17,7 +17,16 @@ jsPsych.plugins["poldrack-categorize"] = (function() {
   plugin.trial = function(display_element, trial) {
 
     console.log("poldrack-categorize")
+    // for (elem in display_element) {
+    //   if (elem == '0') {
+    //     console.log(display_element[elem])
+    //     display_element[elem].classList.add('trial-container')
+    //   }
+    // }
+    var trialContainerDiv = document.createElement('div');
+    trialContainerDiv.className = 'trial-container';
 
+  
     // default parameters
     trial.text_answer = (typeof trial.text_answer === 'undefined') ? "" : trial.text_answer;
     trial.correct_text = (typeof trial.correct_text === 'undefined') ? "<p class='feedback'>Correct</p>" : trial.correct_text;
@@ -46,17 +55,17 @@ jsPsych.plugins["poldrack-categorize"] = (function() {
 
     if (!trial.is_html) {
       // add image to display
-      display_element.append($('<img>', {
-        "src": trial.stimulus,
-        "class": 'jspsych-poldrack-categorize-stimulus',
-        "id": 'jspsych-poldrack-categorize-stimulus'
-      }));
+      var imgElement = document.createElement('img');
+      imgElement.src = trial.stimulus;
+      imgElement.className = 'jspsych-poldrack-categorize-stimulus';
+      imgElement.id = 'jspsych-poldrack-categorize-stimulus';
+      trialContainerDiv.appendChild(imgElement)
     } else {
-      display_element.append($('<div>', {
-        "id": 'jspsych-poldrack-categorize-stimulus',
-        "class": 'jspsych-poldrack-categorize-stimulus',
-        "html": trial.stimulus
-      }));
+      var divElement = document.createElement('div');
+      divElement.id = 'jspsych-poldrack-categorize-stimulus';
+      divElement.className = 'jspsych-poldrack-categorize-stimulus';
+      divElement.innerHTML = trial.stimulus;
+      trialContainerDiv.appendChild(divElement)
     }
 
     // hide image after time if the timing parameter is set
@@ -70,6 +79,34 @@ jsPsych.plugins["poldrack-categorize"] = (function() {
     if (trial.prompt !== "") {
       display_element.append(trial.prompt);
     }
+
+        // add buttons for responses
+
+    // Create the button container div
+    var btnContainer = document.createElement('div');
+    btnContainer.id = 'btn-container';
+
+    // Create the first button
+    var button1 = document.createElement('button');
+    button1.id = 'button-1';
+    button1.className = 'jspsych-btn';
+    button1.textContent = 'Orange';
+
+    // Create the second button
+    var button2 = document.createElement('button');
+    button2.id = 'button-2';
+    button2.className = 'jspsych-btn';
+    button2.textContent = 'Blue';
+
+    // Append buttons to the button container
+    btnContainer.appendChild(button1);
+    btnContainer.appendChild(button2);
+
+    // Append the button container to the trial container
+    trialContainerDiv.appendChild(btnContainer);
+
+    display_element['0'].appendChild(trialContainerDiv)
+
 
     var trial_data = {};
 
@@ -85,8 +122,11 @@ jsPsych.plugins["poldrack-categorize"] = (function() {
         clearTimeout(setTimeoutHandlers[i]);
       }
 
-      // clear keyboard listener
-      jsPsych.pluginAPI.cancelAllKeyboardResponses();
+       // clear button listeners
+
+       $('#button-1').off('click');
+
+       $('#button-2').off('click');
       var correct = false;
       if (trial.key_answer == info.key) {
         correct = true;
@@ -127,6 +167,14 @@ jsPsych.plugins["poldrack-categorize"] = (function() {
         doFeedback(correct, timeout);
       // otherwise wait until timing_response is reached
       } else {
+        if (info.key === trial.key_answer) {
+            correct = true
+        } else {
+
+          correct = false
+
+        }
+
         if (trial.timing_stim > -1) {
           setTimeout(function() {
             $('#jspsych-poldrack-categorize-stimulus').css('visibility', 'hidden');
@@ -143,14 +191,38 @@ jsPsych.plugins["poldrack-categorize"] = (function() {
         }
       }
     }
+   // start button listeners
 
-    jsPsych.pluginAPI.getKeyboardResponse({
-      callback_function: after_response,
-      valid_responses: trial.choices,
-      rt_method: 'date',
-      persist: false,
-      allow_held_key: false
+   $('#button-1').on('click', function() {
+
+    after_response({
+
+      key: trial.choices[0],
+
+      rt: (new Date()).getTime() - start_time
+
     });
+
+  });
+
+
+
+  $('#button-2').on('click', function() {
+
+    after_response({
+
+      key: trial.choices[1],
+
+      rt: (new Date()).getTime() - start_time
+
+    });
+    });
+
+    var start_time = (new Date()).getTime();
+
+
+
+    // end trial if timing_response is set
 
     if (trial.timing_response > 0) {
       setTimeoutHandlers.push(setTimeout(function() {
@@ -170,13 +242,13 @@ jsPsych.plugins["poldrack-categorize"] = (function() {
         if (trial.show_stim_with_feedback) {
           if (!trial.is_html) {
             // add image to display
-            display_element.append($('<img>', {
+            trial_container.append($('<img>', {
               "src": trial.stimulus,
               "class": 'jspsych-poldrack-categorize-stimulus',
               "id": 'jspsych-poldrack-categorize-stimulus'
             }));
           } else {
-            display_element.append($('<div>', {
+            trial_container.append($('<div>', {
               "id": 'jspsych-poldrack-categorize-stimulus',
               "class": 'jspsych-poldrack-categorize-stimulus',
               "html": trial.stimulus
@@ -202,13 +274,9 @@ jsPsych.plugins["poldrack-categorize"] = (function() {
           endTrial();
         }
 
-        jsPsych.pluginAPI.getKeyboardResponse({
-          callback_function: after_forced_response,
-          valid_responses: [trial.key_answer],
-          rt_method: 'date',
-          persist: false,
-          allow_held_key: false
-        });
+        $('#button-1').on('click', after_forced_response);
+
+        $('#button-2').on('click', after_forced_response);
 
       } else {
         setTimeout(function() {
