@@ -54,6 +54,16 @@ body {
   transform: translate(-50%,-50%);
 }
 
+.trial_centerbox {
+  width: 50vw;
+  height: 60vh;
+  /* position:absolute;
+  top:50%;
+  left:50%;
+  margin-right:-50%;
+  transform: translate(-50%,-50%); */
+}
+
 
 /* Text based classes */
 /* Used for general instructions */

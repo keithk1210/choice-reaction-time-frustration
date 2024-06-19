@@ -107,6 +107,8 @@ jsPsych.plugins["poldrack-categorize"] = (function() {
 
     display_element['0'].appendChild(trialContainerDiv)
 
+    console.log(display_element['0'].innerHTML)
+
 
     var trial_data = {};
 
